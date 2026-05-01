@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 移动端视口强制适配，禁止缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>晚风说给你听</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            /* 修复移动端地址栏高度兼容，保证全屏无滚动 */
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        body {
+            background: #f0f4f8;
+            font-family: "微软雅黑", system-ui, -apple-system, sans-serif;
+            touch-action: none; /* 禁止移动端下拉刷新默认行为 */
+        }
+        .note {
+            position: fixed;
+            padding: 8px 18px;
+            border-radius: 999px; /* 极致圆角，和参考图一致 */
+            /* 动态适配字体，保证不同屏幕标签比例一致 */
+            font-size: clamp(14px, 3.5vw, 18px);
+            color: white;
+            font-weight: 600;
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 80vw;
+            /* 核心：固定以自身中心点为原点，彻底解决偏移变形 */
+            transform-origin: center center;
+            transform: translate(-50%, -50%);
+            /* 还原参考图的柔光阴影+质感 */
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            animation: breathe 1.2s ease-in-out infinite alternate;
+            will-change: transform, opacity; /* 移动端性能优化 */
+        }
+        /* 呼吸动画：不覆盖中心点定位，彻底解决动画导致的变形 */
+        @keyframes breathe {
+            from { 
+                opacity: 0.9; 
+                transform: translate(-50%, -50%) scale(0.98); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.02); 
+            }
+        }
+        /* 最核心的突出标签：最后一句「喜欢你很久了」专属样式，和参考图一致置顶突出 */
+        .note-core {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 700;
+            padding: 10px 22px;
+            z-index: 9999 !important;
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // 阶段状态标记
+        let isStage2 = false;
+
+        // 文案库
+        const texts = [
+            "喜欢你很久了", "晚风也温柔了", "梦里有你真好", "萌萌哒",
+            "想你成习惯了", "世界因你柔软", "每次见你都心动", "你眼里有星星",
+            "宇宙都在偏爱你", "今夜的梦给你", "心跳为你加速", "你的温柔让我沦陷",
+            "所有浪漫都与你有关", "想和你散步", "星光都为你闪", "遇见你是浪漫的开始",
+            "好想抱抱你", "你是人间的奇迹", "永远爱你", "我的宝贝","一起去看橘子海"
+        ];
+        // 渐变配色库（和参考图的马卡龙渐变匹配）
+        const gradients = [
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+            'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+            'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+            'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+            'linear-gradient(135deg, #7f53ac 0%, #647dee 100%)'
+        ];
+
+        // 阶段一：满屏随机飘字（适配全端）
+        function stage1() {
+            // 移动端减少数量避免卡顿，PC端保持饱满
+            const maxCount = window.innerWidth < 768 ? 80 : 120;
+            for (let i = 0; i < maxCount; i++) {
+                setTimeout(() => {
+                    if (isStage2) return;
+
+                    const note = document.createElement('div');
+                    note.className = 'note';
+                    note.textContent = texts[Math.floor(Math.random() * texts.length)];
+                    note.style.background = gradients[Math.floor(Math.random() * gradients.length)];
+                    
+                    // 动态计算边界，避免标签超出屏幕
+                    const noteWidth = note.offsetWidth || 140;
+                    const noteHeight = note.offsetHeight || 35;
+                    let x = Math.random() * (window.innerWidth - noteWidth) + noteWidth/2;
+                    let y = Math.random() * (window.innerHeight - noteHeight) + noteHeight/2;
+                    note.style.left = x + 'px';
+                    note.style.top = y + 'px';
+                    
+                    // 移动端降低速度，更丝滑
+                    const speedRate = window.innerWidth < 768 ? 0.6 : 1;
+                    let dx = (Math.random() - 0.5) * 5 * speedRate;
+                    let dy = (Math.random() - 0.5) * 6 * speedRate;
+                    
+                    document.body.appendChild(note);
+                    
+                    // 碰撞回弹逻辑
+                    function move() {
+                        if (isStage2) return;
+                        x += dx;
+                        y += dy;
+                        if (x < noteWidth/2 || x > window.innerWidth - noteWidth/2) dx = -dx;
+                        if (y < noteHeight/2 || y > window.innerHeight - noteHeight/2) dy = -dy * 0.9;
+                        
+                        note.style.left = x + 'px';
+                        note.style.top = y + 'px';
+                        requestAnimationFrame(move);
+                    }
+                    move();
+                }, i * 25);
+            }
+        }
+
+        // 阶段二：核心优化！标准饱满爱心，彻底解决压扁变形问题
+        function stage2() {
+            isStage2 = true;
+            // 清空原有飘字
+            document.querySelectorAll('.note').forEach(el => el.remove());
+
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const centerX = screenWidth / 2;
+            const centerY = screenHeight / 2;
+
+            // ============== 核心修复：爱心不变扁的关键 ==============
+            // 1. 强制等比例缩放，x/y轴用同一个scale值，保证爱心宽高比1:1，永远不会被拉伸压扁
+            // 2. 动态适配屏幕，竖屏手机也能完整显示饱满爱心，不会超出也不会扁
+            const baseSize = Math.min(screenWidth, screenHeight);
+            const scale = baseSize / 52; // 分母越小爱心越大，越大爱心越小，可自行微调
+            // ==========================================================
+
+            // 标签总数，移动端减少避免重叠，PC端保持堆叠饱满
+            const totalCount = window.innerWidth < 768 ? 200 : 260;
+            // 3D堆叠偏移量，还原参考图的前后层次感，不是平铺
+            const stackOffset = baseSize / 180; 
+
+            for (let i = 0; i < totalCount; i++) {
+                setTimeout(() => {
+                    // 标准笛卡尔爱心曲线公式，保证形状完美饱满，不会畸形
+                    const t = i / totalCount * Math.PI * 2;
+                    // 爱心x轴坐标，等比例缩放
+                    const x = centerX + scale * 16 * Math.pow(Math.sin(t), 3);
+                    // 爱心y轴坐标，和x轴用同一个scale，强制等比例，彻底解决压扁问题
+                    const yFormula = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                    const y = centerY - scale * yFormula;
+
+                    // 3D堆叠效果：给每个标签增加轻微的随机偏移，还原参考图的多层叠加质感
+                    const randomOffsetX = (Math.random() - 0.5) * stackOffset * i;
+                    const randomOffsetY = (Math.random() - 0.5) * stackOffset * i;
+                    const finalX = x + randomOffsetX;
+                    const finalY = y + randomOffsetY;
+                    
+                    const note = document.createElement('div');
+                    // 最后一个标签是核心突出的「喜欢你很久了」
+                    const isCore = i === totalCount - 1;
+                    note.className = isCore ? 'note note-core' : 'note';
+                    note.textContent = isCore ? "喜欢你很久了" : texts[Math.floor(Math.random() * texts.length)];
+                    note.style.background = gradients[Math.floor(Math.random() * gradients.length)];
+                    
+                    // 定位到爱心坐标
+                    note.style.left = finalX + 'px';
+                    note.style.top = finalY + 'px';
+                    // 层级控制：越靠前的标签层级越高，核心标签置顶
+                    note.style.zIndex = isCore ? 9999 : i;
+                    // 越靠后的标签透明度越低，增强3D纵深效果
+                    note.style.opacity = isCore ? 1 : 0.7 + (i / totalCount) * 0.3;
+                    
+                    document.body.appendChild(note);
+                }, i * (window.innerWidth < 768 ? 60 : 80)); // 移动端加快生成速度
+            }
+        }
+
+        // 页面加载执行
+        window.onload = () => {
+            stage1();
+            // 10秒后自动切换到爱心阶段，可自行修改时间（单位毫秒）
+            setTimeout(stage2, 10000);
+        };
+
+        // 屏幕旋转/窗口大小变化，自动重新渲染，保证爱心不变形
+        window.onresize = () => {
+            if (isStage2) {
+                stage2();
+            }
+        };
+
+        // 点击屏幕直接触发爱心阶段，不用等待倒计时
+        document.body.addEventListener('click', () => {
+            if (!isStage2) {
+                stage2();
+            }
+        });
+    </script>
+</body>
+</html>
